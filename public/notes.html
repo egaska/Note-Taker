@@ -43,20 +43,4 @@
 
 <script type="text/javascript">
 
-    app.get("/api/notes", function(req,res){
-    noteData = fs.readFileSync("db/db.json", "utf8");
-    res.json(noteData);
-  })
-
-  $(".save-note").on("click", function (event) {
-    event.preventDefault();
-    let newNote = {
-      title: $(".note-title").val().trim(),
-      text: $(".note-textarea").val().trim()
-    };
-    console.log("Test");
-
-    $.post("/api/notes", newNote, function (db) { })
-  })
-
 </script>
