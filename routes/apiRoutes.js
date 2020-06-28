@@ -5,31 +5,24 @@ module.exports = function (app) {
   fs.readFile("db/db.json", "utf8", (err, data) => {
     //Loads data from data files
     var notesData = require("../db/db.json");
+    let notes = JSON.parse(data);
 
     //Routing
 
     if (err) throw err;
     //GET method
     app.get("/api/notes", function (req, res) {
-      res.json(notesData);
+      res.json(notes);
     });
+
     //POST method
     app.post("/api/notes", function (req, res) {
-      if (notesData.length === 0) {
-        req.body.id = "0";
-      } else {
-        req.body.id = JSON.stringify(
-          JSON.parse(notesData[notesData.length - 1].id) + 1
-        );
-      }
-      console.log("req.body.id: " + req.body.id);
-
-      notesData.push(req.body);
-
-      notesData = JSON.stringify(notesData);
-      fs.writeFileSync("./db/db.json", notesData);
-
-      res.json(req.body);
+        let newNote = req.body;
+        notes.push(newNote);
+      fs.writeFile("db/db.json", JSON.stringify(notes, "\t"), (err) => {
+        if (err) throw err;
+        return console.log("Added new note: " + newNote.title);
+    });
     });
 
     app.delete("/api/db/:id", function (req, res) {
