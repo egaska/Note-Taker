@@ -1,51 +1,61 @@
 const fs = require("fs");
+const notes = require("../db/db.json");
+
+// Set unique id to entry
+ let id = notes.length + 1;
+ //Loads data from data files
 
 module.exports = function (app) {
+  
+  //Routing
 
-  fs.readFile("db/db.json", "utf8", (err, data) => {
+  //GET method
+  app.get("/api/notes", function (req, res) {
+    res.json(notes);
+  });
 
-    if (err) throw err;
-    
-    //Loads data from data files
-    var notesData = require("../db/db.json");
-    let notes = JSON.parse(data);
+  //GET specfic id
+  app.get("/api/notes/:id", function (req, res) {
+    // display json for the notes array indices of the provided id
+    res.json(notes[req.params.id]);
+  });
 
-    //Routing
-
-    if (err) throw err;
-    //GET method
-    app.get("/api/notes", function (req, res) {
-      res.json(notes);
+  //POST method
+  app.post("/api/notes", function (req, res) {
+      req.body.id = id++;
+    notes.push(req.body);
+    fs.writeFile("db/db.json", JSON.stringify(notes, "\t"), (err) => {
+      if (err) throw err;
+      return console.log("Added new note");
     });
+    res.json(notes);
+  });
 
-    //GET specfic id
-    app.get("/api/notes/:id", function(req,res) {
-        // display json for the notes array indices of the provided id
-        res.json(notes[req.params.id]);
-    });
+  app.delete("/api/notes/:id", function (req, res) {
+    let id = req.params.id.toString();
 
-    //POST method
-    app.post("/api/notes", function (req, res) {
-        // Set unique id to entry
-        if (notesData.length == 0){
-            req.body.id = "0";
-        } else{
-            req.body.id = JSON.stringify(JSON.parse(notesData.length) + 1);
-        }
-        notes.push(req.body);
-      fs.writeFile("db/db.json", JSON.stringify(notes, "\t"), (err) => {
-        if (err) throw err;
-        return console.log("Added new note");
-    });
-    });
+    for (i = 0; i < notes.length; i++) {
+      if (notes[i].id == id) {
+        console.log(notes[i].title);
+        console.log("Id Match: " + id);
 
-    app.delete("/api/notes/:id", function (req, res) {
-        notes.splice(req.params.id, 1);
-        fs.writeFile("db/db.json",JSON.stringify(notes,'\t'),err => {
-            if (err) throw err;
-            return console.log("Deleted note " + req.params.title);
-    });
-     
-    });
+        // Removes the deleted note
+
+        notes.splice(i, 1);
+        break;
+      }
+    }
+    pushToDB(notes);
+    // responds with deleted note
+    res.json(notes);
   });
 };
+
+function pushToDB(notes) {
+  notes = JSON.stringify(notes);
+  fs.writeFileSync("./db/db.json", notes, function (err) {
+    if (err) {
+      return console.log(err);
+    }
+  });
+}
